@@ -1,3 +1,4 @@
+# import logging
 import numpy as np
 import cv2
 import pyautogui
@@ -48,37 +49,27 @@ if __name__ == '__main__':
     # cv2.namedWindow('screen', cv2.WINDOW_NORMAL)
     # cv2.setWindowProperty('screen', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
     loop_time = time.time()
-    avg = []
     camera = dxcam.create()
-    while True:
+    s = Sock('0.0.0.0', 9999, 1)
+    while not keyboard.is_pressed('f12'):
         img = get_frame(camera, cursor=True)
-        try:
-            FPS = 1 / (time.time() - loop_time)
-        except ZeroDivisionError:
-            FPS = 1000
-        print(f'FPS {FPS}')
-        avg.append(FPS)
-        loop_time = time.time()
-
         if img is None:
             continue
-        cv2.imshow('screen', img)
-        cv2.waitKey(1)
-        if keyboard.is_pressed('f12'):
-            break
 
-    cv2.destroyAllWindows()
-    print(sum(avg) / len(avg))
+        ret, jpeg = cv2.imencode('.jpg', img)
+        data = jpeg.tobytes()
 
-    # s = Sock('0.0.0.0', 9999, 1)
-    # s.send_data(b'hello')
-    # s.close()
+        s.send_data(data)
 
-    # import time
-    #
-    # start_time = time.time()
-    # img = screen()
-    # print(time.time() - start_time)
-    # print(type(img))
+        try:
+            fps = 1 / (time.time() - loop_time)
+            print(f'FPS {fps}')
+        except ZeroDivisionError:
+            # too much fps lol
+            pass
+        loop_time = time.time()
+    s.close()
+
+    # cv2.destroyAllWindows()
     # cv2.imshow('screen', img)
-    # cv2.waitKey(0)
+    # cv2.waitKey(1)
