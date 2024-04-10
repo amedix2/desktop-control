@@ -3,14 +3,26 @@ import cv2
 import pyautogui
 import socket
 import time
-# import keyboard
+import keyboard
 
 
-def screen(size_x: int = 1280, size_y: int = 720) -> np.ndarray:
+def get_frame(size_x: int = 1280, size_y: int = 720, cursor: bool = True) -> np.ndarray:
     image = pyautogui.screenshot()
     image = cv2.cvtColor(np.array(image),
                          cv2.COLOR_RGB2BGR)
     image = cv2.resize(image, (size_x, size_y))
+    if cursor:
+        image = add_cursor(image)
+    return image
+
+
+def add_cursor(image: np.ndarray, cursor_size: int = 3, thickness: int = 1) -> np.ndarray:
+    screen_size = pyautogui.size()
+    x, y = pyautogui.position()
+    x = int(x * image.shape[1] / screen_size[0])
+    y = int(y * image.shape[0] / screen_size[1])
+    cv2.line(image, (x - cursor_size, y), (x + cursor_size, y), (255, 255, 255), thickness)
+    cv2.line(image, (x, y - cursor_size), (x, y + cursor_size), (255, 255, 255), thickness)
     return image
 
 
@@ -34,9 +46,10 @@ if __name__ == '__main__':
     # cv2.namedWindow('screen', cv2.WINDOW_NORMAL)
     # cv2.setWindowProperty('screen', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
     while True:
-        img = screen()
+        img = get_frame(cursor=True)
         cv2.imshow('screen', img)
-        if cv2.waitKey(1) == ord('q'):
+        cv2.waitKey(1)
+        if keyboard.is_pressed('f12'):
             break
     cv2.destroyAllWindows()
 
