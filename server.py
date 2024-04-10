@@ -2,18 +2,20 @@ import numpy as np
 import cv2
 import pyautogui
 import socket
+import dxcam
 import time
 import keyboard
 
 
-def get_frame(size_x: int = 1280, size_y: int = 720, cursor: bool = True) -> np.ndarray:
-    image = pyautogui.screenshot()
-    image = cv2.cvtColor(np.array(image),
-                         cv2.COLOR_RGB2BGR)
-    image = cv2.resize(image, (size_x, size_y))
+def get_frame(cm, size_x: int = 1280, size_y: int = 720, cursor: bool = True) -> np.ndarray or None:
+    frame = cm.grab()
+    if frame is None:
+        return None
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    frame = cv2.resize(frame, (size_x, size_y))
     if cursor:
-        image = add_cursor(image)
-    return image
+        frame = add_cursor(frame)
+    return frame
 
 
 def add_cursor(image: np.ndarray, cursor_size: int = 3, thickness: int = 1) -> np.ndarray:
@@ -45,13 +47,28 @@ class Sock:
 if __name__ == '__main__':
     # cv2.namedWindow('screen', cv2.WINDOW_NORMAL)
     # cv2.setWindowProperty('screen', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    loop_time = time.time()
+    avg = []
+    camera = dxcam.create()
     while True:
-        img = get_frame(cursor=True)
+        img = get_frame(camera, cursor=True)
+        try:
+            FPS = 1 / (time.time() - loop_time)
+        except ZeroDivisionError:
+            FPS = 1000
+        print(f'FPS {FPS}')
+        avg.append(FPS)
+        loop_time = time.time()
+
+        if img is None:
+            continue
         cv2.imshow('screen', img)
         cv2.waitKey(1)
         if keyboard.is_pressed('f12'):
             break
+
     cv2.destroyAllWindows()
+    print(sum(avg) / len(avg))
 
     # s = Sock('0.0.0.0', 9999, 1)
     # s.send_data(b'hello')
