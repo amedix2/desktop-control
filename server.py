@@ -50,7 +50,7 @@ if __name__ == '__main__':
     # cv2.setWindowProperty('screen', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
     loop_time = time.time()
     camera = dxcam.create()
-    s = Sock('0.0.0.0', 9999, 1)
+    s = Sock('0.0.0.0', 9998, 1)
     while not keyboard.is_pressed('f12'):
         img = get_frame(camera, cursor=True)
         if img is None:

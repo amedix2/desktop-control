@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect(('127.0.0.1', 9999))
+sock.connect(('127.0.0.1', 9998))
 
 # cv2.namedWindow('Screen', cv2.WINDOW_NORMAL)
 # cv2.setWindowProperty('Screen', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
