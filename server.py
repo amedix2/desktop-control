@@ -40,6 +40,9 @@ class Sock:
     def send_data(self, data: bytes) -> None:
         self.conn.send(data)
 
+    def wait(self):
+        return self.conn.recv(1024)
+
     def close(self) -> None:
         self.conn.send(b'close')
         self.conn.close()
@@ -60,6 +63,7 @@ if __name__ == '__main__':
         data = jpeg.tobytes()
 
         s.send_data(data)
+        s.wait()
 
         try:
             fps = 1 / (time.time() - loop_time)

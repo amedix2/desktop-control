@@ -18,6 +18,7 @@ while not keyboard.is_pressed('f12'):
 
         img = np.frombuffer(data, dtype=np.uint8)
         img = cv2.imdecode(img, cv2.IMREAD_COLOR)
+        sock.send(b'done')
         try:
             cv2.imshow('screen', img)
             cv2.waitKey(1)
