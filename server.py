@@ -54,6 +54,8 @@ if __name__ == '__main__':
     loop_time = time.time()
     camera = dxcam.create()
     s = Sock('0.0.0.0', 9998, 1)
+    fps = 120
+    quality = 1
     while not keyboard.is_pressed('f12'):
         img_time = time.time()
         img = get_frame(camera, cursor=True)
@@ -62,7 +64,10 @@ if __name__ == '__main__':
         print('frame', time.time() - img_time)
 
         comp_time = time.time()
-        ret, jpeg = cv2.imencode('.jpg', img, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
+        quality = min(70, int(fps/45 * 100))
+        print('quality', quality)
+
+        ret, jpeg = cv2.imencode('.jpg', img, [int(cv2.IMWRITE_JPEG_QUALITY), quality])
         data = jpeg.tobytes()
         print('compression', time.time() - comp_time)
 
