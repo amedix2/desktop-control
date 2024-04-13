@@ -10,7 +10,7 @@ sock.connect(('127.0.0.1', 9998))
 # cv2.setWindowProperty('Screen', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
 while not keyboard.is_pressed('f12'):
-    data = sock.recv(2_764_800)
+    data = sock.recv(22_118_400)
     if data:
         if data == b'close':
             sock.close()

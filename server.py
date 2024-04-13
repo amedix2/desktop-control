@@ -62,7 +62,7 @@ if __name__ == '__main__':
         print('frame', time.time() - img_time)
 
         comp_time = time.time()
-        ret, jpeg = cv2.imencode('.jpg', img)
+        ret, jpeg = cv2.imencode('.jpg', img, [int(cv2.IMWRITE_JPEG_QUALITY), 70])
         data = jpeg.tobytes()
         print('compression', time.time() - comp_time)
 
