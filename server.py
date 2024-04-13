@@ -55,23 +55,30 @@ if __name__ == '__main__':
     camera = dxcam.create()
     s = Sock('0.0.0.0', 9998, 1)
     while not keyboard.is_pressed('f12'):
+        img_time = time.time()
         img = get_frame(camera, cursor=True)
         if img is None:
             continue
+        print('frame', time.time() - img_time)
 
+        comp_time = time.time()
         ret, jpeg = cv2.imencode('.jpg', img)
         data = jpeg.tobytes()
+        print('compression', time.time() - comp_time)
 
+        send_time = time.time()
         s.send_data(data)
         s.wait()
+        print('send', time.time() - send_time)
 
         try:
             fps = 1 / (time.time() - loop_time)
-            print(f'FPS {fps}')
+            print(f'FPS {fps} ({time.time() - loop_time})')
         except ZeroDivisionError:
             # too much fps lol
             pass
         loop_time = time.time()
+        #time.sleep(5)
     s.close()
 
     # cv2.destroyAllWindows()
