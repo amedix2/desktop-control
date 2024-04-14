@@ -37,8 +37,8 @@ class Sock:
         self.conn, self.addr = self.s.accept()
         print('connected:', self.addr)
 
-    def send_data(self, data: bytes) -> None:
-        self.conn.send(data)
+    def send_data(self, dt: bytes) -> None:
+        self.conn.send(dt)
 
     def wait(self):
         return self.conn.recv(1024)
@@ -64,7 +64,7 @@ if __name__ == '__main__':
         print('frame', time.time() - img_time)
 
         comp_time = time.time()
-        quality = min(70, int(fps/45 * 100))
+        quality = min(90, int(fps/45 * 100))
         print('quality', quality)
 
         ret, jpeg = cv2.imencode('.jpg', img, [int(cv2.IMWRITE_JPEG_QUALITY), quality])
