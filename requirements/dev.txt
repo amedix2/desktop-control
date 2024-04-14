@@ -1,1 +1,11 @@
 -r prod.txt
+black==24.1.1
+flake8
+pep8-naming
+flake8-import-order
+flake8-quotes
+flake8-absolute-import
+flake8-commas
+flake8-comprehensions
+flake8-eradicate
+flake8-fixme

@@ -6,9 +6,12 @@ import socket
 import dxcam
 import time
 import keyboard
+import pickle
 
 
-def get_frame(cm, size_x: int = 1280, size_y: int = 720, cursor: bool = True) -> np.ndarray or None:
+def get_frame(
+        cm, size_x: int = 1280, size_y: int = 720, cursor: bool = True
+) -> np.ndarray or None:
     frame = cm.grab()
     if frame is None:
         return None
@@ -19,13 +22,27 @@ def get_frame(cm, size_x: int = 1280, size_y: int = 720, cursor: bool = True) ->
     return frame
 
 
-def add_cursor(image: np.ndarray, cursor_size: int = 3, thickness: int = 1) -> np.ndarray:
+def add_cursor(
+        image: np.ndarray, cursor_size: int = 3, thickness: int = 1
+) -> np.ndarray:
     screen_size = pyautogui.size()
     x, y = pyautogui.position()
     x = int(x * image.shape[1] / screen_size[0])
     y = int(y * image.shape[0] / screen_size[1])
-    cv2.line(image, (x - cursor_size, y), (x + cursor_size, y), (255, 255, 255), thickness)
-    cv2.line(image, (x, y - cursor_size), (x, y + cursor_size), (255, 255, 255), thickness)
+    cv2.line(
+        image,
+        (x - cursor_size, y),
+        (x + cursor_size, y),
+        (255, 255, 255),
+        thickness,
+    )
+    cv2.line(
+        image,
+        (x, y - cursor_size),
+        (x, y + cursor_size),
+        (255, 255, 255),
+        thickness,
+    )
     return image
 
 
@@ -50,13 +67,14 @@ class Sock:
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    # cv2.namedWindow('screen', cv2.WINDOW_NORMAL)
-    # cv2.setWindowProperty('screen', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
     loop_time = time.time()
     camera = dxcam.create()
     s = Sock('0.0.0.0', 9998, 1)
     fps = 120
     quality = 1
+    prev_frame = None
+    i = 0
+    interval = 3
     while not keyboard.is_pressed('f12'):
         img_time = time.time()
         img = get_frame(camera, cursor=True, size_x=1280, size_y=720)
@@ -65,14 +83,24 @@ if __name__ == '__main__':
         logging.info(f'frame {time.time() - img_time}')
 
         comp_time = time.time()
-        quality = min(70, int(fps / 60 * 100))
-        logging.info(f'quality {quality}')
+        if prev_frame is None or i % interval == 0:
+            send_frame = img
+        else:
+            frame_delta = cv2.absdiff(prev_frame, img)
+            _, threshold_delta = cv2.threshold(frame_delta, 25, 255, cv2.THRESH_BINARY)
+            threshold_delta = threshold_delta.astype(np.uint8)
+            threshold_delta = cv2.cvtColor(threshold_delta, cv2.COLOR_BGR2GRAY)
+            threshold_delta = cv2.resize(threshold_delta, (img.shape[1], img.shape[0]))
+            send_frame = cv2.bitwise_and(img, img, mask=threshold_delta)
+        i += 1
 
-        ret, jpeg = cv2.imencode('.jpg', img, [int(cv2.IMWRITE_JPEG_QUALITY), quality])
-        data = jpeg.tobytes()
         logging.info(f'compression {time.time() - comp_time}')
+        prev_frame = img
 
         send_time = time.time()
+        data = pickle.dumps(send_frame)
+        s.send_data(pickle.dumps(len(data)))
+        s.wait()
         s.send_data(data)
         s.wait()
         logging.info(f'send {time.time() - send_time}')
@@ -81,12 +109,7 @@ if __name__ == '__main__':
             fps = 1 / (time.time() - loop_time)
             logging.info(f'FPS {fps} ({time.time() - loop_time})')
         except ZeroDivisionError:
-            # too much fps lol
             pass
         loop_time = time.time()
         # time.sleep(1)
     s.close()
-
-    # cv2.destroyAllWindows()
-    # cv2.imshow('screen', img)
-    # cv2.waitKey(1)
