@@ -9,6 +9,9 @@ import keyboard
 import pickle
 
 
+logging.basicConfig(level=logging.INFO)
+
+
 def get_frame(
         cm, size_x: int = 1280, size_y: int = 720, cursor: bool = True
 ) -> np.ndarray or None:
@@ -66,7 +69,6 @@ class Sock:
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
     loop_time = time.time()
     camera = dxcam.create()
     s = Sock('0.0.0.0', 9998, 1)
@@ -74,7 +76,7 @@ if __name__ == '__main__':
     quality = 1
     prev_frame = None
     i = 0
-    interval = 10
+    interval = 4
     while not keyboard.is_pressed('f12'):
         img_time = time.time()
         img = get_frame(camera, cursor=True, size_x=1280, size_y=720)

@@ -6,6 +6,8 @@ import pickle
 import numpy as np
 
 
+logging.basicConfig(level=logging.INFO)
+
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.connect(('127.0.0.1', 9998))
 
@@ -14,13 +16,13 @@ sock.connect(('127.0.0.1', 9998))
 
 last_key_frame = None
 i = 0
-interval = 10
+interval = 4
 while not keyboard.is_pressed('f12'):
     logging.info('waiting size')
     data_size = sock.recv(1024)
-    sock.send(b'got')
     logging.info(f'data size {data_size}')
     data_size = pickle.loads(data_size)
+    sock.send(b'got')
     data = b''
     while len(data) < data_size:
         logging.debug(f'packet received')
@@ -34,7 +36,9 @@ while not keyboard.is_pressed('f12'):
     if i % interval == 0:
         last_key_frame = img
     else:
-        img = cv2.bitwise_or(last_key_frame, img)
+        delta_frame = cv2.bitwise_and(last_key_frame, img)
+        last_key_frame = cv2.add(last_key_frame, delta_frame)
+        img = last_key_frame
     i += 1
     sock.send(b'done')
     try:
@@ -45,6 +49,3 @@ while not keyboard.is_pressed('f12'):
 
 sock.close()
 cv2.destroyAllWindows()
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG)
