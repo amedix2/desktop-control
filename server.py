@@ -74,7 +74,7 @@ if __name__ == '__main__':
     quality = 1
     prev_frame = None
     i = 0
-    interval = 3
+    interval = 10
     while not keyboard.is_pressed('f12'):
         img_time = time.time()
         img = get_frame(camera, cursor=True, size_x=1280, size_y=720)

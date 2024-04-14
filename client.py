@@ -12,6 +12,9 @@ sock.connect(('127.0.0.1', 9998))
 # cv2.namedWindow('Screen', cv2.WINDOW_NORMAL)
 # cv2.setWindowProperty('Screen', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
+last_key_frame = None
+i = 0
+interval = 10
 while not keyboard.is_pressed('f12'):
     logging.info('waiting size')
     data_size = sock.recv(1024)
@@ -28,6 +31,11 @@ while not keyboard.is_pressed('f12'):
         data += packet
     logging.info(f'data size received {len(data)}')
     img = pickle.loads(data)
+    if i % interval == 0:
+        last_key_frame = img
+    else:
+        img = cv2.bitwise_or(last_key_frame, img)
+    i += 1
     sock.send(b'done')
     try:
         cv2.imshow('screen', img)
