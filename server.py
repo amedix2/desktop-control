@@ -58,7 +58,7 @@ class Sock:
         logging.info(f'connected: {self.addr}')
 
     def send_data(self, dt: bytes) -> None:
-        self.conn.send(dt)
+        self.conn.sendall(dt)
 
     def wait(self):
         return self.conn.recv(1024)
@@ -87,6 +87,7 @@ if __name__ == '__main__':
         comp_time = time.time()
         if prev_frame is None or i % interval == 0:
             send_frame = img
+            i = 0
         else:
             frame_delta = cv2.absdiff(prev_frame, img)
             _, threshold_delta = cv2.threshold(frame_delta, 25, 255, cv2.THRESH_BINARY)

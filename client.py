@@ -18,19 +18,18 @@ last_key_frame = None
 i = 0
 interval = 4
 while not keyboard.is_pressed('f12'):
-    logging.info('waiting size')
     data_size = sock.recv(1024)
-    logging.info(f'data size {data_size}')
     data_size = pickle.loads(data_size)
+    logging.info(f'data size {data_size}')
     sock.send(b'got')
-    data = b''
-    while len(data) < data_size:
-        logging.debug(f'packet received')
-        packet = sock.recv(data_size - len(data))
-        logging.debug(f'packet size {len(packet)}')
-        if not packet:
-            break
-        data += packet
+    data = sock.recv(data_size)
+    # while len(data) < data_size:
+    #     logging.debug(f'packet received')
+    #     packet = sock.recv(data_size - len(data))
+    #     logging.debug(f'packet size {len(packet)}')
+    #     if not packet:
+    #         break
+    #     data += packet
     logging.info(f'data size received {len(data)}')
     img = pickle.loads(data)
     if i % interval == 0:
