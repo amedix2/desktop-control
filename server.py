@@ -38,7 +38,7 @@ class Sock:
         print('connected:', self.addr)
 
     def send_data(self, dt: bytes) -> None:
-        self.conn.send(dt)
+        self.conn.sendall(dt)
 
     def wait(self):
         return self.conn.recv(1024)
@@ -49,8 +49,6 @@ class Sock:
 
 
 if __name__ == '__main__':
-    # cv2.namedWindow('screen', cv2.WINDOW_NORMAL)
-    # cv2.setWindowProperty('screen', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
     loop_time = time.time()
     camera = dxcam.create()
     s = Sock('0.0.0.0', 9998, 1)
@@ -74,7 +72,7 @@ if __name__ == '__main__':
         send_time = time.time()
         print(f'size {len(data)}| packets {round(len(data)/4096)}')
         s.send_data(data)
-        s.send(b'end')
+        s.send_data(b'end')
         s.wait()
         print('send', time.time() - send_time)
 
@@ -88,6 +86,3 @@ if __name__ == '__main__':
         #time.sleep(5)
     s.close()
 
-    # cv2.destroyAllWindows()
-    # cv2.imshow('screen', img)
-    # cv2.waitKey(1)
