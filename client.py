@@ -13,10 +13,10 @@ sock.connect(('127.0.0.1', 9998))
 while not keyboard.is_pressed('f12'):
     data = b''
     while True:
-        packet = sock.recv(8192)
+        packet = sock.recv(4096)
         data += packet
         print(packet)
-        if len(packet) < 8192:
+        if packet.endswith(b'end') or len(packet) < 4096:
             break
         print('packet received')
     print('frane received')
