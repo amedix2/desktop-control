@@ -16,10 +16,10 @@ while not keyboard.is_pressed('f12'):
         packet = sock.recv(4096)
         data += packet
         print(packet)
-        if packet.endswith(b'end') or len(packet) < 4096:
+        if len(packet) < 4096:
             break
         print('packet received')
-    print('frane received')
+    print('frame received')
     if data:
         if data == b'close':
             sock.close()

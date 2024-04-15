@@ -62,7 +62,7 @@ if __name__ == '__main__':
         print('frame', time.time() - img_time)
 
         comp_time = time.time()
-        quality = min(90, int(fps/45 * 100))
+        quality = min(90, int(fps/60 * 100))
         print('quality', quality)
 
         ret, jpeg = cv2.imencode('.jpg', img, [int(cv2.IMWRITE_JPEG_QUALITY), quality])
@@ -72,7 +72,7 @@ if __name__ == '__main__':
         send_time = time.time()
         print(f'size {len(data)}| packets {round(len(data)/4096)}')
         s.send_data(data)
-        s.send_data(b'end')
+        #.send_data(b'end')
         s.wait()
         print('send', time.time() - send_time)
 
