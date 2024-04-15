@@ -72,6 +72,7 @@ if __name__ == '__main__':
         print('compression', time.time() - comp_time)
 
         send_time = time.time()
+        print(f'size {len(data)}| packets {round(len(data)/8192)}')
         s.send_data(data)
         s.wait()
         print('send', time.time() - send_time)
