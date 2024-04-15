@@ -1,3 +1,4 @@
+import logging
 import socket
 import keyboard
 import cv2
@@ -10,7 +11,15 @@ sock.connect(('127.0.0.1', 9998))
 # cv2.setWindowProperty('Screen', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
 while not keyboard.is_pressed('f12'):
-    data = sock.recv(262144)
+    data = b''
+    while True:
+        packet = sock.recv(8192)
+        data += packet
+        print(packet)
+        if len(packet) < 8192:
+            break
+        print('packet received')
+    print('frane received')
     if data:
         if data == b'close':
             sock.close()
