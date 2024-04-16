@@ -1,4 +1,6 @@
 # import logging
+import logging
+
 import numpy as np
 import cv2
 import pyautogui
@@ -6,6 +8,9 @@ import socket
 import dxcam
 import time
 import keyboard
+
+
+logging.basicConfig(level=logging.INFO)
 
 
 def get_frame(cm, size_x: int = 1280, size_y: int = 720, cursor: bool = True) -> np.ndarray or None:
@@ -35,7 +40,7 @@ class Sock:
         self.s.bind((host, port))
         self.s.listen(listen)
         self.conn, self.addr = self.s.accept()
-        print('connected:', self.addr)
+        logging.info(f'connected: {self.addr}')
 
     def send_data(self, dt: bytes) -> None:
         self.conn.sendall(dt)
@@ -59,30 +64,29 @@ if __name__ == '__main__':
         img = get_frame(camera, cursor=True)
         if img is None:
             continue
-        print('frame', time.time() - img_time)
+        logging.debug(f'frame {time.time() - img_time}')
 
         comp_time = time.time()
-        quality = min(90, int(fps/60 * 100))
-        print('quality', quality)
+        quality = min(90, int(fps / 45 * 100))
+        logging.info(f'quality {quality}')
 
         ret, jpeg = cv2.imencode('.jpg', img, [int(cv2.IMWRITE_JPEG_QUALITY), quality])
         data = jpeg.tobytes()
-        print('compression', time.time() - comp_time)
+        logging.debug(f'compression {time.time() - comp_time}')
 
         send_time = time.time()
-        print(f'size {len(data)}| packets {round(len(data)/4096)}')
+        logging.debug(f'size {len(data)}| packets {round(len(data) / 4096)}')
         s.send_data(data)
-        #.send_data(b'end')
+        s.send_data(b'q')
         s.wait()
-        print('send', time.time() - send_time)
+        logging.debug(f'send {time.time() - send_time}')
 
         try:
             fps = 1 / (time.time() - loop_time)
-            print(f'FPS {fps} ({time.time() - loop_time})')
+            logging.info(f'FPS {fps} ({time.time() - loop_time})')
         except ZeroDivisionError:
             # too much fps lol
             pass
         loop_time = time.time()
-        #time.sleep(5)
+        # time.sleep(5)
     s.close()
-
