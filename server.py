@@ -1,6 +1,4 @@
-# import logging
 import logging
-
 import numpy as np
 import cv2
 import pyautogui
@@ -8,7 +6,6 @@ import socket
 import dxcam
 import time
 import keyboard
-
 
 logging.basicConfig(level=logging.INFO)
 
@@ -35,28 +32,24 @@ def add_cursor(image: np.ndarray, cursor_size: int = 3, thickness: int = 1) -> n
 
 
 class Sock:
-    def __init__(self, host: str, port: int, listen: int) -> None:
-        self.s = socket.socket()
+    def __init__(self, host: str = '0.0.0.0', port: int = 9998) -> None:
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.s.bind((host, port))
-        self.s.listen(listen)
-        self.conn, self.addr = self.s.accept()
-        logging.info(f'connected: {self.addr}')
+        _, self.addr = self.s.recvfrom(1024)
 
     def send_data(self, dt: bytes) -> None:
-        self.conn.sendall(dt)
-
-    def wait(self):
-        return self.conn.recv(1024)
+        packet_size = 2 ** 12
+        for i in range(0, len(dt), packet_size):
+            self.s.sendto(dt[i:i + packet_size], self.addr)
 
     def close(self) -> None:
-        self.conn.send(b'close')
-        self.conn.close()
+        self.s.close()
 
 
 if __name__ == '__main__':
     loop_time = time.time()
     camera = dxcam.create()
-    s = Sock('0.0.0.0', 9998, 1)
+    s = Sock('0.0.0.0', 9998)
     fps = 120
     quality = 1
     while not keyboard.is_pressed('f12'):
@@ -75,10 +68,9 @@ if __name__ == '__main__':
         logging.debug(f'compression {time.time() - comp_time}')
 
         send_time = time.time()
-        logging.debug(f'size {len(data)}| packets {round(len(data) / 4096)}')
+        # logging.debug(f'size {len(data)}| packets {round(len(data) / 4096)}')
         s.send_data(data)
-        s.send_data(b'q')
-        s.wait()
+        # s.send_data(b'q')
         logging.debug(f'send {time.time() - send_time}')
 
         try:
