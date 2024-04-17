@@ -44,14 +44,14 @@ class Sock:
         packet_size = 2 ** 12
         for i in range(0, len(dt), packet_size):
             self.s.sendto(dt[i:i + packet_size], self.addr)
-        logging.debug(f'sent {len(dt)} bytes to {self.addr}')
-        logging.debug(f'waiting for response...')
-        response = self.s.recvfrom(4)
-        logging.debug(response)
-        if response == b'quit':
-            self.s.close()
-        elif response == b'done':
-            logging.debug(f'frame sent to {self.addr}')
+        logging.debug(f'sent {len(dt)} bytes to {self.addr} in {packet_size} bytes')
+        # logging.debug(f'waiting for response...')
+        # response = self.s.recvfrom(4)
+        # logging.debug(response)
+        # if response == b'quit':
+        #     self.s.close()
+        # elif response == b'done':
+        #     logging.debug(f'frame sent to {self.addr}')
 
     def close(self) -> None:
         self.s.sendto(b'quit', self.addr)
@@ -72,7 +72,7 @@ if __name__ == '__main__':
         logging.debug(f'frame {time.time() - img_time}')
 
         comp_time = time.time()
-        quality = min(90, int(fps / 45 * 100))
+        quality = min(70, int(fps / 45 * 100))
         logging.info(f'quality {quality}')
 
         ret, jpeg = cv2.imencode('.jpg', img, [int(cv2.IMWRITE_JPEG_QUALITY), quality])

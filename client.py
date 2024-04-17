@@ -33,7 +33,7 @@ while not keyboard.is_pressed('f12'):
             if len(packet) < 2 ** 12:
                 break
     logging.info('frame received')
-    sock.sendto(b'done', SERVER_ADDR)
+    # sock.sendto(b'done', SERVER_ADDR)
     # data = data.rstrip(b'q')
     if data:
         if data == b'quit':
