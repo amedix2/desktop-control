@@ -32,9 +32,10 @@ while not keyboard.is_pressed('f12'):
             if len(packet) < 2 ** 12:
                 break
     logging.info('frame received')
+    sock.sendto(b'done', SERVER_ADDR)
     # data = data.rstrip(b'q')
     if data:
-        if data == b'close':
+        if data == b'quit':
             sock.close()
             break
         st = time.time()
@@ -51,5 +52,6 @@ while not keyboard.is_pressed('f12'):
             # sock.send(b'done')
             logging.error('wrong image')
 
+sock.sendto(b'quit', SERVER_ADDR)
 sock.close()
 cv2.destroyAllWindows()

@@ -7,7 +7,7 @@ import dxcam
 import time
 import keyboard
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 
 def get_frame(cm, size_x: int = 1280, size_y: int = 720, cursor: bool = True) -> np.ndarray or None:
@@ -35,14 +35,23 @@ class Sock:
     def __init__(self, host: str = '0.0.0.0', port: int = 9998) -> None:
         self.s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.s.bind((host, port))
-        _, self.addr = self.s.recvfrom(1024)
+        logging.debug('waiting for connection...')
+        _, self.addr = self.s.recvfrom(2)
+        logging.debug(f'connected {self.addr}')
 
     def send_data(self, dt: bytes) -> None:
         packet_size = 2 ** 12
         for i in range(0, len(dt), packet_size):
             self.s.sendto(dt[i:i + packet_size], self.addr)
+        response = self.s.recvfrom(4)
+        logging.debug(response)
+        if response == b'quit':
+            self.s.close()
+        elif response == b'done':
+            logging.debug(f'frame sent to {self.addr}')
 
     def close(self) -> None:
+        self.s.sendto(b'quit', self.addr)
         self.s.close()
 
 
