@@ -38,11 +38,14 @@ class Sock:
         logging.debug('waiting for connection...')
         _, self.addr = self.s.recvfrom(2)
         logging.debug(f'connected {self.addr}')
+        time.sleep(1)
 
     def send_data(self, dt: bytes) -> None:
         packet_size = 2 ** 12
         for i in range(0, len(dt), packet_size):
             self.s.sendto(dt[i:i + packet_size], self.addr)
+        logging.debug(f'sent {len(dt)} bytes to {self.addr}')
+        logging.debug(f'waiting for response...')
         response = self.s.recvfrom(4)
         logging.debug(response)
         if response == b'quit':

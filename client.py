@@ -25,6 +25,7 @@ while not keyboard.is_pressed('f12'):
     #         break
 
     data = b''
+    logging.debug('waiting for data')
     while True:
         packet, addr = sock.recvfrom(2 ** 12)
         if addr == SERVER_ADDR:
