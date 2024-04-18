@@ -1,6 +1,4 @@
-# import logging
 import logging
-
 import numpy as np
 import cv2
 import pyautogui
@@ -9,8 +7,7 @@ import dxcam
 import time
 import keyboard
 
-
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 
 def get_frame(cm, size_x: int = 1280, size_y: int = 720, cursor: bool = True) -> np.ndarray or None:
@@ -44,12 +41,13 @@ class Sock:
 
     def send_data(self, dt: bytes) -> None:
         self.conn.sendall(dt)
+        self.conn.sendall(b'Q')
 
     def wait(self):
         return self.conn.recv(1024)
 
     def close(self) -> None:
-        self.conn.send(b'close')
+        self.conn.sendall(b'close')
         self.conn.close()
 
 
@@ -58,7 +56,7 @@ if __name__ == '__main__':
     camera = dxcam.create()
     s = Sock('0.0.0.0', 9998, 1)
     fps = 120
-    quality = 1
+    quality = 90
     while not keyboard.is_pressed('f12'):
         img_time = time.time()
         img = get_frame(camera, cursor=True)
@@ -67,7 +65,7 @@ if __name__ == '__main__':
         logging.debug(f'frame {time.time() - img_time}')
 
         comp_time = time.time()
-        quality = min(90, int(fps / 45 * 100))
+        # quality = min(70, int(fps * 0.5))
         logging.info(f'quality {quality}')
 
         ret, jpeg = cv2.imencode('.jpg', img, [int(cv2.IMWRITE_JPEG_QUALITY), quality])
@@ -75,10 +73,9 @@ if __name__ == '__main__':
         logging.debug(f'compression {time.time() - comp_time}')
 
         send_time = time.time()
-        logging.debug(f'size {len(data)}| packets {round(len(data) / 4096)}')
+        logging.debug(f'size {len(data)} | packets {round(len(data) / 8192)}')
         s.send_data(data)
-        s.send_data(b'q')
-        s.wait()
+        #s.wait()
         logging.debug(f'send {time.time() - send_time}')
 
         try:

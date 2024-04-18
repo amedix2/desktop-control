@@ -13,17 +13,17 @@ sock.connect(('127.0.0.1', 9998))
 
 # cv2.namedWindow('Screen', cv2.WINDOW_NORMAL)
 # cv2.setWindowProperty('Screen', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-
+prev_image = None
 while not keyboard.is_pressed('f12'):
     data = b''
     while True:
-        packet = sock.recv(4096)
+        packet = sock.recv(65536)
         data += packet
         logging.debug(len(packet))
-        if len(packet) < 4096 and packet.endswith(b'q'):
+        if packet.endswith(b'Q'):
+            data += packet.rstrip(b'q')
             break
     logging.info('frame received')
-    data = data.rstrip(b'q')
     if data:
         if data == b'close':
             sock.close()
@@ -32,15 +32,18 @@ while not keyboard.is_pressed('f12'):
         img = np.frombuffer(data, dtype=np.uint8)
         img = cv2.imdecode(img, cv2.IMREAD_COLOR)
         logging.debug(time.time() - st)
-        sock.send(b'done')
+        #sock.send(b'done')
         logging.debug(time.time() - st)
         try:
             cv2.imshow('screen', img)
             # sock.send(b'done')
             cv2.waitKey(1)
-        except cv2.error:
+            prev_image = img
+        except cv2.error as e:
+            cv2.imshow('screen', prev_image)
             # sock.send(b'done')
             logging.error('wrong image')
+            logging.error(e)
 
 sock.close()
 cv2.destroyAllWindows()
