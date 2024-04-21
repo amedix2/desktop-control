@@ -41,10 +41,9 @@ class Sock:
 
     def send_data(self, dt: bytes) -> None:
         self.conn.sendall(dt)
-        self.conn.sendall(b'Q')
 
-    def wait(self):
-        return self.conn.recv(1024)
+    def recv(self, size: int = 1024) -> bytes:
+        return self.conn.recv(size)
 
     def close(self) -> None:
         self.conn.sendall(b'close')
@@ -73,9 +72,13 @@ if __name__ == '__main__':
         logging.debug(f'compression {time.time() - comp_time}')
 
         send_time = time.time()
-        logging.debug(f'size {len(data)} | packets {round(len(data) / 8192)}')
+        # logging.debug(f'size {len(data)} | packets {round(len(data) / 8192)}')
+        s.send_data(str(len(data)).encode('utf-8'))
+        s.send_data(b'S')
         s.send_data(data)
-        #s.wait()
+        s.send_data(b'Q')
+        packet_loss = float(s.recv(1024).decode('utf-8'))
+        logging.error(f'packet loss: {packet_loss}')
         logging.debug(f'send {time.time() - send_time}')
 
         try:
