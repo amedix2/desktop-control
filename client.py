@@ -14,20 +14,20 @@ sock.connect(('127.0.0.1', 9998))
 # cv2.setWindowProperty('Screen', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 prev_image = None
 while not keyboard.is_pressed('f12'):
-    len_img = int(sock.recv(8).decode('utf-8'))
+    len_img = sock.recv(8)
+    len_img = int(len_img[:len_img.find(b'S')])
     data = b''
     while True:
         packet = sock.recv(65536)
         data += packet
         logging.debug(len(packet))
         if packet.endswith(b'Q'):
-            data += packet.rstrip(b'q')
+            data += packet.rstrip(b'Q')
             break
-    data = data[data.find(b'S') + 1:]
     logging.info(f'frame received: {len(data)} bytes of {len_img}')
     packet_loss = 1 - (len(data) / len_img)
     logging.info(f'packet loss: {packet_loss}')
-    sock.sendall(str(packet_loss).encode('utf-8'))
+    sock.sendall(bytes(str(packet_loss), encoding='utf-8'))
     if data:
         if data == b'close':
             sock.close()

@@ -73,11 +73,11 @@ if __name__ == '__main__':
 
         send_time = time.time()
         # logging.debug(f'size {len(data)} | packets {round(len(data) / 8192)}')
-        s.send_data(str(len(data)).encode('utf-8'))
+        s.send_data(bytes(str(len(data)), encoding='utf-8'))
         s.send_data(b'S')
         s.send_data(data)
         s.send_data(b'Q')
-        packet_loss = float(s.recv(1024).decode('utf-8'))
+        packet_loss = float(s.recv(1024))
         logging.error(f'packet loss: {packet_loss}')
         logging.debug(f'send {time.time() - send_time}')
 
