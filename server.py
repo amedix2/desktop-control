@@ -56,28 +56,40 @@ if __name__ == '__main__':
     s = Sock('0.0.0.0', 9998, 1)
     fps = 120
     quality = 90
+    resolution_x = 160
+    packet_loss = 0.0
+    loss_list = [0.0] * 10
+    qual_k = 0.2
     while not keyboard.is_pressed('f12'):
+        resolution_x = 1280 / (1 + sum(loss_list)/len(loss_list) * qual_k)
+        # quality = min(90, int((100 - sum(loss_list)/len(loss_list) * qual_k * 10)))
         img_time = time.time()
-        img = get_frame(camera, cursor=True)
+        img = get_frame(camera, cursor=True, size_x=int(resolution_x), size_y=int(resolution_x / 16 * 9))
         if img is None:
             continue
+        logging.debug(f'frame x_size: {len(img)}')
         logging.debug(f'frame {time.time() - img_time}')
 
         comp_time = time.time()
-        # quality = min(70, int(fps * 0.5))
         logging.info(f'quality {quality}')
 
-        ret, jpeg = cv2.imencode('.jpg', img, [int(cv2.IMWRITE_JPEG_QUALITY), quality])
+        ret, jpeg = cv2.imencode('.jpg', img, [int(cv2.IMWRITE_JPEG_QUALITY), int(quality)])
         data = jpeg.tobytes()
         logging.debug(f'compression {time.time() - comp_time}')
 
         send_time = time.time()
         # logging.debug(f'size {len(data)} | packets {round(len(data) / 8192)}')
+        s.send_data(b'LS')
         s.send_data(bytes(str(len(data)), encoding='utf-8'))
-        s.send_data(b'S')
+        s.send_data(b'LQ')
+        s.send_data(b'DS')
         s.send_data(data)
-        s.send_data(b'Q')
-        packet_loss = float(s.recv(1024))
+        s.send_data(b'DQ')
+        packet_loss = s.recv(1024)
+        packet_loss = float(packet_loss[packet_loss.find(b'PS') + 2:packet_loss.find(b'PQ')])
+        loss_list.append(packet_loss)
+        loss_list.pop(0)
+        logging.debug(f'{loss_list} ({sum(loss_list)/len(loss_list)})')
         logging.error(f'packet loss: {packet_loss}')
         logging.debug(f'send {time.time() - send_time}')
 
