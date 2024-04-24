@@ -20,13 +20,15 @@ while not keyboard.is_pressed('f12'):
     data = b''
     while True:
         packet = sock.recv(65536)
-        data += packet
         logging.debug(len(packet))
         if packet.endswith(b'Q'):
             data += packet.rstrip(b'Q')
             break
+        data += packet
     # logging.debug(f'{data.find(b"S")} -> {data.find(b"Q")}')
     try:
+        logging.debug(f'LS {data.find(b"LS")} - LQ {data.find(b"LQ")}')
+        logging.debug(f'DS {data.find(b"DS")} - DQ {data.find(b"DQ")}')
         len_img = int(data[data.find(b'LS') + 2:data.find(b'LQ')])
         data = data[data.find(b'DS') + 2:data.find(b'DQ')]
         logging.info(f'frame received: {len(data)} bytes of {len_img}')

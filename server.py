@@ -39,6 +39,7 @@ class Sock:
         self.conn, self.addr = self.s.accept()
         logging.info(f'connected: {self.addr}')
 
+    # TODO add S n Q flags into Sock class to send_data method
     def send_data(self, dt: bytes) -> None:
         self.conn.sendall(dt)
 
@@ -58,11 +59,11 @@ if __name__ == '__main__':
     quality = 90
     resolution_x = 160
     packet_loss = 0.0
-    loss_list = [0.0] * 10
-    qual_k = 0.2
+    loss_list = [0.0] * 600
+    qual_k = 0.5
     while not keyboard.is_pressed('f12'):
-        resolution_x = 1280 / (1 + sum(loss_list)/len(loss_list) * qual_k)
-        # quality = min(90, int((100 - sum(loss_list)/len(loss_list) * qual_k * 10)))
+        resolution_x = min(1280, int(1280 / (1 + sum(loss_list) / len(loss_list) * qual_k)))
+        quality = min(70, int((100 - sum(loss_list) / len(loss_list) * qual_k * 10)))
         img_time = time.time()
         img = get_frame(camera, cursor=True, size_x=int(resolution_x), size_y=int(resolution_x / 16 * 9))
         if img is None:
@@ -89,7 +90,7 @@ if __name__ == '__main__':
         packet_loss = float(packet_loss[packet_loss.find(b'PS') + 2:packet_loss.find(b'PQ')])
         loss_list.append(packet_loss)
         loss_list.pop(0)
-        logging.debug(f'{loss_list} ({sum(loss_list)/len(loss_list)})')
+        logging.debug(f'{loss_list} ({sum(loss_list) / len(loss_list)})')
         logging.error(f'packet loss: {packet_loss}')
         logging.debug(f'send {time.time() - send_time}')
 
