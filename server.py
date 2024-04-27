@@ -39,9 +39,8 @@ class Sock:
         self.conn, self.addr = self.s.accept()
         logging.info(f'connected: {self.addr}')
 
-    # TODO add S n Q flags into Sock class to send_data method
-    def send_data(self, dt: bytes) -> None:
-        self.conn.sendall(dt)
+    def send_data(self, dt: bytes, flags: (bytes, bytes) = (b'', b'')) -> None:
+        self.conn.sendall(flags[0] + dt + flags[1])
 
     def recv(self, size: int = 1024) -> bytes:
         return self.conn.recv(size)
@@ -80,12 +79,12 @@ if __name__ == '__main__':
 
         send_time = time.time()
         # logging.debug(f'size {len(data)} | packets {round(len(data) / 8192)}')
-        s.send_data(b'LS')
-        s.send_data(bytes(str(len(data)), encoding='utf-8'))
-        s.send_data(b'LQ')
-        s.send_data(b'DS')
-        s.send_data(data)
-        s.send_data(b'DQ')
+        # s.send_data(b'LS')
+        s.send_data(bytes(str(len(data)), encoding='utf-8'), flags=(b'LS', b'LQ'))
+        # s.send_data(b'LQ')
+        # s.send_data(b'DS')
+        s.send_data(data, flags=(b'DS', b'DQ'))
+        # s.send_data(b'DQ')
         packet_loss = s.recv(1024)
         packet_loss = float(packet_loss[packet_loss.find(b'PS') + 2:packet_loss.find(b'PQ')])
         loss_list.append(packet_loss)

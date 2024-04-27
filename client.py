@@ -20,11 +20,10 @@ while not keyboard.is_pressed('f12'):
     data = b''
     while True:
         packet = sock.recv(65536)
-        logging.debug(len(packet))
-        if packet.endswith(b'Q'):
-            data += packet.rstrip(b'Q')
-            break
+        logging.debug(f'{len(packet)}: {packet[:20]}')
         data += packet
+        if packet.endswith(b'DQ'):
+            break
     # logging.debug(f'{data.find(b"S")} -> {data.find(b"Q")}')
     try:
         logging.debug(f'LS {data.find(b"LS")} - LQ {data.find(b"LQ")}')
